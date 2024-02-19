@@ -72,11 +72,11 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20240211.02'
+VERSION = '20240218.01'
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0'
-TRACKER_ID = 'vbox7'
-TRACKER_HOST = 'legacy-api.arpa.li'
-MULTI_ITEM_SIZE = 5
+TRACKER_ID = 'mastodon'
+TRACKER_HOST = 'host.docker.internal:9080'  # TODO: Dev
+MULTI_ITEM_SIZE = 1  # TODO: Public tracker code doesn't support multi-items
 
 
 ###########################################################################
@@ -92,6 +92,7 @@ class CheckIP(SimpleTask):
 
     def process(self, item):
         # NEW for 2014! Check if we are behind firewall/proxy
+        # new and 2014 :)
 
         if self._counter <= 0:
             item.log_output('Checking IP address.')
@@ -143,6 +144,7 @@ class PrepareDirectories(SimpleTask):
 
         open('%(item_dir)s/%(warc_file_base)s.warc.zst' % item, 'w').close()
         open('%(item_dir)s/%(warc_file_base)s_data.txt' % item, 'w').close()
+        open('%(item_dir)s/%(warc_file_base)s_bad-items.txt' % item, 'w').close()
 
 class MoveFiles(SimpleTask):
     def __init__(self):
@@ -188,7 +190,7 @@ def get_hash(filename):
 
 CWD = os.getcwd()
 PIPELINE_SHA1 = get_hash(os.path.join(CWD, 'pipeline.py'))
-LUA_SHA1 = get_hash(os.path.join(CWD, 'vbox7.lua'))
+LUA_SHA1 = get_hash(os.path.join(CWD, 'mastodon.lua'))
 
 def stats_id_function(item):
     d = {
@@ -211,7 +213,8 @@ class ZstdDict(object):
         response = requests.get(
             'https://legacy-api.arpa.li/dictionary',
             params={
-                'project': TRACKER_ID
+                #'project': TRACKER_ID
+                'project': 'urls'
             }
         )
         response.raise_for_status()
@@ -258,7 +261,7 @@ class WgetArgs(object):
             '--prefer-family', ('IPv4' if 'PREFER_IPV4' in os.environ else 'IPv6'),
             '--content-on-error',
             '--no-http-keep-alive',
-            '--lua-script', 'vbox7.lua',
+            '--lua-script', 'mastodon.lua',
             '-o', ItemInterpolation('%(item_dir)s/wget.log'),
             '--no-check-certificate',
             '--output-document', ItemInterpolation('%(item_dir)s/wget.tmp'),
@@ -279,17 +282,27 @@ class WgetArgs(object):
             '--warc-header', 'x-wget-at-project-name: ' + TRACKER_ID,
             '--warc-dedup-url-agnostic',
             '--warc-compression-use-zstd',
-            '--warc-zstd-dict-no-include',
+            #'--warc-zstd-dict-no-include', TODO dev
             '--header', 'X-Forwarded-For: 84.238.194.2'
         ]
+        #dict_data = ZstdDict.get_dict()
+        #with open(os.path.join(item['item_dir'], 'zstdict'), 'wb') as f:
+        #    f.write(dict_data['dict'])
+        #item['dict_id'] = dict_data['id']
+        #item['dict_project'] = TRACKER_ID
+        #wget_args.extend([
+        #    '--warc-zstd-dict', ItemInterpolation('%(item_dir)s/zstdict'),
+        #])
+
         dict_data = ZstdDict.get_dict()
         with open(os.path.join(item['item_dir'], 'zstdict'), 'wb') as f:
             f.write(dict_data['dict'])
         item['dict_id'] = dict_data['id']
         item['dict_project'] = TRACKER_ID
         wget_args.extend([
-            '--warc-zstd-dict', ItemInterpolation('%(item_dir)s/zstdict'),
+        #    '--warc-zstd-dict', ItemInterpolation('%(item_dir)s/zstdict'),
         ])
+
 
         if '--concurrent' in sys.argv:
             concurrency = int(sys.argv[sys.argv.index('--concurrent')+1])
@@ -301,30 +314,20 @@ class WgetArgs(object):
 
         for item_name in item['item_name'].split('\0'):
             wget_args.extend(['--warc-header', 'x-wget-at-project-item-name: '+item_name])
-            wget_args.append('item-name://'+item_name)
-            item_type, item_value = item_name.split(':', 1)
-            if item_type == 'play':
-                wget_args.extend(['--warc-header', 'vbox7-play: '+item_value])
-                wget_args.append('https://www.vbox7.com/aj/player/item/options?vid='+item_value)
+            wget_args.append('https://archiveteam-items.invalid/' + item_name)
+            item_type, item_host, item_value = item_name.split(':', 2)
+            if item_type == 'post':
+                #wget_args.append(item_value)
+                print("got valid item: " + item_name)
+                #print("type: " + item_type, "host: " + item_host, "value: " + item_value)
+            elif item_type == 'collection':
+                print("got valid item: " + item_name)
             elif item_type == 'user':
-                wget_args.extend(['--warc-header', 'vbox7-user: '+item_value])
-                wget_args.append('https://www.vbox7.com/user:'+item_value)
-            elif item_type == 'article':
-                wget_args.extend(['--warc-header', 'vbox7-article: '+item_value])
-                wget_args.append('https://www.vbox7.com/article:'+item_value)
-            elif item_type == 'quiz':
-                wget_args.extend(['--warc-header', 'vbox7-quiz: '+item_value])
-                wget_args.append('https://www.vbox7.com/quiz:'+item_value)
-            elif item_type == 'tag':
-                wget_args.extend(['--warc-header', 'vbox7-tag: '+item_value])
-                wget_args.append('https://www.vbox7.com/tag:'+item_value)
-            elif item_type == 'subtitle':
-                wget_args.extend(['--warc-header', 'vbox7-subtitle: '+item_value])
-                wget_args.append('https://www.vbox7.com/castsub/{}.vtt'.format(item_value))
-            elif item_type == 'asset':
-                url = 'https://' + item_value
-                wget_args.extend(['--warc-header', 'vbox7-asset-url: '+url])
-                wget_args.append(url)
+                raise Exception('Not implemented')
+            elif item_type == 'ipost':
+                raise Exception('Not implemented')
+            elif item_type == 'iuser':
+                raise Exception('Not implemented')
             else:
                 raise Exception('Unknown item')
 
@@ -355,7 +358,7 @@ project = Project(
 
 pipeline = Pipeline(
     CheckIP(),
-    GetItemFromTracker('http://{}/{}/multi={}/'
+    GetItemFromTracker('http://{}/{}' # /multi={}/
         .format(TRACKER_HOST, TRACKER_ID, MULTI_ITEM_SIZE),
         downloader, VERSION),
     PrepareDirectories(warc_prefix=TRACKER_ID),
