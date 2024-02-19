@@ -1,6 +1,6 @@
-# vbox7-grab
+# fediverse-grab
 
-More information about the archiving project can be found on the ArchiveTeam wiki: [Vbox7](https://wiki.archiveteam.org/index.php?title=Vbox7)
+More information about the archiving project can be found on the ArchiveTeam wiki: [Fediverse](https://wiki.archiveteam.org/index.php?title=Fediverse)
 
 ## Setup instructions
 
@@ -15,7 +15,7 @@ Data integrity is very important in Archive Team projects. Please note the follo
 * Only x64-based machines are supported. [ARM (used on Raspberry Pi and Apple Silicon Macs) is not currently supported](https://wiki.archiveteam.org/index.php/ArchiveTeam_Warrior#Can_I_run_the_Warrior_on_ARM_or_some_other_unusual_architecture?).
 * See the [Archive Team Wiki](https://wiki.archiveteam.org/index.php/ArchiveTeam_Warrior#Warrior_FAQ) for additional information.
 
-We strongly encourage you to join the IRC channel associated with this project in order to be informed about project updates and other important announcements, as well as to be reachable in the event of an issue. The Archive Team Wiki has [more information about IRC](https://wiki.archiveteam.org/index.php/Archiveteam:IRC). We can be found at hackint IRC [#vboxxy](https://webirc.hackint.org/#irc://irc.hackint.org/#vboxxy).
+We strongly encourage you to join the IRC channel associated with this project in order to be informed about project updates and other important announcements, as well as to be reachable in the event of an issue. The Archive Team Wiki has [more information about IRC](https://wiki.archiveteam.org/index.php/Archiveteam:IRC). We can be found at hackint IRC [#archiveteam-bs](https://webirc.hackint.org/#irc://irc.hackint.org/#archiveteam-bs).
 
 **If you have any questions or issues during setup, please review the wiki pages or contact us on IRC for troubleshooting information.**
 
@@ -23,7 +23,7 @@ We strongly encourage you to join the IRC channel associated with this project i
 
 #### Archive Team Warrior (recommended for most users)
 
-This and other archiving projects can easily be run using the [Archive Team Warrior](https://wiki.archiveteam.org/index.php/ArchiveTeam_Warrior) virtual machine. Follow the [instructions on the Archive Team wiki](https://wiki.archiveteam.org/index.php/ArchiveTeam_Warrior) for installing the Warrior, and from the web interface running at `http://localhost:8001/`, enter the nickname that you want to be shown as on the tracker. There is no registration, just pick a nickname you like. Then, select the `Vbox7` project in the Warrior interface.
+This and other archiving projects can easily be run using the [Archive Team Warrior](https://wiki.archiveteam.org/index.php/ArchiveTeam_Warrior) virtual machine. Follow the [instructions on the Archive Team wiki](https://wiki.archiveteam.org/index.php/ArchiveTeam_Warrior) for installing the Warrior, and from the web interface running at `http://localhost:8001/`, enter the nickname that you want to be shown as on the tracker. There is no registration, just pick a nickname you like. Then, select the `Mastodon` project in the Warrior interface.
 
 #### Project-specific Docker container (for more advanced users)
 
@@ -35,7 +35,7 @@ It is advised to use [Watchtower](https://github.com/containrrr/watchtower) to a
 
 after which the project container can be run:
 
-    docker run -d --name archiveteam --label=com.centurylinklabs.watchtower.enable=true --log-driver json-file --log-opt max-size=50m --restart=unless-stopped atdr.meo.ws/archiveteam/vbox7-grab --concurrent 1 YOURNICKHERE
+    docker run -d --name archiveteam --label=com.centurylinklabs.watchtower.enable=true --log-driver json-file --log-opt max-size=50m --restart=unless-stopped atdr.meo.ws/archiveteam/fediverse-grab --concurrent 1 YOURNICKHERE
 
 Be sure to replace `YOURNICKHERE` with the nickname that you want to be shown as on the tracker. There is no registration, just pick a nickname you like.
 
@@ -51,6 +51,6 @@ Are you a developer? Help write code for us! Look at our [developer documentatio
 
 ### Other problems
 
-Have an issue not listed here? Join us on IRC and ask! We can be found at hackint IRC [#vboxxy](https://webirc.hackint.org/#irc://irc.hackint.org/#vboxxy).
+Have an issue not listed here? Join us on IRC and ask! We can be found at hackint IRC [#archiveteam-bs](https://webirc.hackint.org/#irc://irc.hackint.org/#archiveteam-bs).
 
 
