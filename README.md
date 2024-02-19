@@ -1,3 +1,4 @@
+not a real/official project, just playing with and learning the tools with an easy target :)
 # fediverse-grab
 
 More information about the archiving project can be found on the ArchiveTeam wiki: [Fediverse](https://wiki.archiveteam.org/index.php?title=Fediverse)
